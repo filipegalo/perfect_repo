@@ -1,0 +1,21 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  python-quality:
+    uses: ./.github/workflows/python-quality.yml
+    secrets: inherit
+
+  python-security:
+    uses: ./.github/workflows/python-security.yml
+    secrets: inherit
+
+  python-tests:
+    needs: [python-quality]
+    uses: ./.github/workflows/python-tests.yml
+    secrets: inherit

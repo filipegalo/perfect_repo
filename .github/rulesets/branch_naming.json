@@ -1,0 +1,23 @@
+{
+    "name": "Branch Naming Conventions",
+    "target": "branch",
+    "source_type": "Repository",
+    "enforcement": "active",
+    "conditions": {
+        "ref_name": {
+            "include": [
+                "~ALL"
+            ],
+            "exclude": [
+                "refs/heads/release/*",
+                "refs/heads/feature/*",
+                "refs/heads/hotfix/*"
+            ]
+        }
+    },
+    "rules": [
+        {
+            "type": "creation"
+        }
+    ]
+}
