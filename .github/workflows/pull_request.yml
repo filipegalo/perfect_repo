@@ -7,15 +7,83 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  python-quality:
-    uses: ./.github/workflows/python-quality.yml
-    secrets: inherit
+  quality:
+    name: Code Quality & Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for commitizen history
 
-  python-security:
-    uses: ./.github/workflows/python-security.yml
-    secrets: inherit
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
 
-  python-tests:
-    needs: [python-quality]
-    uses: ./.github/workflows/python-tests.yml
-    secrets: inherit
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.1.3
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install --no-root --no-interaction
+
+      - name: Run Ruff (format & lint)
+        run: |
+          poetry run ruff format --check .
+          poetry run ruff check .
+
+      - name: Run Bandit security checks
+        run: poetry run bandit -r . -c pyproject.toml
+
+      - name: Check commit messages
+        run: poetry run cz check --rev-range origin/main..HEAD
+
+  tests:
+    name: Tests
+    needs: [quality]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.1.3
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install --no-root --no-interaction
+
+      - name: Run tests with coverage
+        run: poetry run pytest --cov=app --cov-report=html
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
