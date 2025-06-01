@@ -33,7 +33,10 @@
       "parameters": {
         "required_status_checks": [
           {
-            "context": "Pull Request Checks"
+            "context": "Code Quality & Security"
+          },
+          {
+            "context": "Tests"
           }
         ],
         "strict_required_status_checks_policy": true
