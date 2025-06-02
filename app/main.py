@@ -5,7 +5,7 @@ app = FastAPI()
 
 @app.get('/main')
 async def main_route():
-	return {'message': 'Hey, good job!'}
+	return {'message': 'Hey, good job! Good job!'}
 
 
 @app.get('/test')
